@@ -4,12 +4,16 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QDebug>
+
+static int SENS_VAL = 20;
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget)
 {
     ui->setupUi(this);
+    ui->thresholdHorizontalSlider->setRange(0,255);
 }
 
 Widget::~Widget()
@@ -81,3 +85,10 @@ void Widget::on_playVideoPushButton_pressed()
 //        event->ignore();
 //    }
 //}
+
+void Widget::on_thresholdHorizontalSlider_valueChanged(int value)
+{
+    QString tValue = QString::number(value);
+    ui->thresholdValueLineEdit->setText(tValue);
+    SENS_VAL = value;
+}

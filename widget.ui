@@ -73,7 +73,7 @@
      <string>Threshold Value :</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QLineEdit" name="thresholdValueLineEdit">
     <property name="geometry">
      <rect>
       <x>190</x>

@@ -30,6 +30,8 @@ private slots:
 
     void on_trackingObj_5_PushButton_pressed();
 
+    void on_thresholdHorizontalSlider_valueChanged(int value);
+
 private:
     Ui::Widget *ui;
 
