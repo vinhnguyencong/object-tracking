@@ -11,7 +11,7 @@
 static int SENS_VAL = 20;
 static int OBJ_NUM = 0;
 int *obj_number = &OBJ_NUM;
-int *thresh_val = &SENS_VAL;
+int *threshold_value = &SENS_VAL;
 
 
 Widget::Widget(QWidget *parent) :
@@ -63,7 +63,7 @@ void Widget::on_trackingObj_2_PushButton_pressed()
 
 void Widget::on_trackingObj_3_PushButton_pressed()
 {
-    if(OBJ_NUM == 3)
+    if(OBJ_NUM < 3)
     {
         QMessageBox::about(this, "Warning", "No object detected");
     }
@@ -75,7 +75,7 @@ void Widget::on_trackingObj_3_PushButton_pressed()
 
 void Widget::on_trackingObj_4_PushButton_pressed()
 {
-    if(OBJ_NUM == 4)
+    if(OBJ_NUM < 4)
     {
         QMessageBox::about(this, "Warning", "No object detected");
     }
@@ -87,7 +87,7 @@ void Widget::on_trackingObj_4_PushButton_pressed()
 
 void Widget::on_trackingObj_5_PushButton_pressed()
 {
-    if(OBJ_NUM == 5)
+    if(OBJ_NUM < 5)
     {
         QMessageBox::about(this, "Warning", "No object detected");
     }
@@ -133,7 +133,7 @@ void Widget::on_thresholdHorizontalSlider_valueChanged(int value)
 {
     QString tValue = QString::number(value);
     ui->thresholdValueLineEdit->setText(tValue);
-    *thresh_val = value;
+    *threshold_value = value;
 }
 
 void Widget::detector(QString videoPath)

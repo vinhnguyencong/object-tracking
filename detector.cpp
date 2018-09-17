@@ -3,7 +3,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/videoio.hpp>
-#include <qstring.h>
+#include <QString>
 #include <QDebug>
 
 using namespace std;
@@ -18,7 +18,7 @@ std::string intToString(int number)
 }
 
 // Sensitivity value
-extern int *thresh_val;
+extern int *threshold_value;
 extern int *obj_number;
 
 void detect(QString videoPath)
@@ -111,10 +111,10 @@ void detect(QString videoPath)
 
             // Find edge line of object
             Canny(grayFrame, grayFrame, 10, 150, 3);
-            cv::threshold(grayFrame,thresholdFrame,*thresh_val,255,THRESH_BINARY);
+            cv::threshold(grayFrame,thresholdFrame,*threshold_value,255,THRESH_BINARY);
 
             //threshold again to obtain binary image from blur output
-            cv::threshold(thresholdFrame,thresholdFrame,*thresh_val,255,THRESH_BINARY);
+            cv::threshold(thresholdFrame,thresholdFrame,*threshold_value,255,THRESH_BINARY);
 
             // Return rectangular structuring element with size 5x5
             cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
