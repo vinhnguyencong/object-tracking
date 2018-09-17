@@ -21,6 +21,7 @@ SOURCES += main.cpp\
         widget.cpp \
     detector.cpp
 
-HEADERS  += widget.h
+HEADERS  += widget.h \
+    detector.h
 
 FORMS    += widget.ui

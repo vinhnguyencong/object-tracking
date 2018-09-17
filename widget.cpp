@@ -5,8 +5,14 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QDebug>
+#include <detector.h>
 
+// Threshold value
 static int SENS_VAL = 20;
+static int OBJ_NUM = 0;
+int *obj_number = &OBJ_NUM;
+int *thresh_val = &SENS_VAL;
+
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
@@ -14,6 +20,7 @@ Widget::Widget(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->thresholdHorizontalSlider->setRange(0,255);
+    ui->thresholdHorizontalSlider->setSliderPosition(20);
 }
 
 Widget::~Widget()
@@ -32,33 +39,69 @@ void Widget::on_browseVideoPushButton_pressed()
 
 void Widget::on_trackingObj_1_PushButton_pressed()
 {
+    if(OBJ_NUM == 0)
+    {
+        QMessageBox::about(this, "Warning", "No object detected");
+    }
+    else
+    {
 
+    }
 }
 
 void Widget::on_trackingObj_2_PushButton_pressed()
 {
+    if(OBJ_NUM < 2)
+    {
+        QMessageBox::about(this, "Warning", "No object detected");
+    }
+    else
+    {
 
+    }
 }
 
 void Widget::on_trackingObj_3_PushButton_pressed()
 {
+    if(OBJ_NUM == 3)
+    {
+        QMessageBox::about(this, "Warning", "No object detected");
+    }
+    else
+    {
 
+    }
 }
 
 void Widget::on_trackingObj_4_PushButton_pressed()
 {
+    if(OBJ_NUM == 4)
+    {
+        QMessageBox::about(this, "Warning", "No object detected");
+    }
+    else
+    {
 
+    }
 }
 
 void Widget::on_trackingObj_5_PushButton_pressed()
 {
+    if(OBJ_NUM == 5)
+    {
+        QMessageBox::about(this, "Warning", "No object detected");
+    }
+    else
+    {
 
+    }
 }
 
 void Widget::on_playVideoPushButton_pressed()
 {
     // Get path to Video
     QString videoPath = ui->videoURLLineEdit->text();
+    detector(videoPath);
 
     // Throw a message box when video path is blank
 //    if(videoPath == "")
@@ -90,5 +133,10 @@ void Widget::on_thresholdHorizontalSlider_valueChanged(int value)
 {
     QString tValue = QString::number(value);
     ui->thresholdValueLineEdit->setText(tValue);
-    SENS_VAL = value;
+    *thresh_val = value;
+}
+
+void Widget::detector(QString videoPath)
+{
+    detect(videoPath);
 }

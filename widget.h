@@ -15,6 +15,8 @@ public:
     explicit Widget(QWidget *parent = 0);
     ~Widget();
 
+    void detector(QString videoPath);
+
 private slots:
     void on_browseVideoPushButton_pressed();
 

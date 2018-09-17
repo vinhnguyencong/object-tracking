@@ -4,9 +4,11 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 #include <qstring.h>
+#include <QDebug>
 
 using namespace std;
 using namespace cv;
+
 // Convert int to string
 std::string intToString(int number)
 {
@@ -16,7 +18,8 @@ std::string intToString(int number)
 }
 
 // Sensitivity value
-const static int SENS_VAL = 20;
+extern int *thresh_val;
+extern int *obj_number;
 
 void detect(QString videoPath)
 {
@@ -108,10 +111,10 @@ void detect(QString videoPath)
 
             // Find edge line of object
             Canny(grayFrame, grayFrame, 10, 150, 3);
-            cv::threshold(grayFrame,thresholdFrame,SENS_VAL,255,THRESH_BINARY);
+            cv::threshold(grayFrame,thresholdFrame,*thresh_val,255,THRESH_BINARY);
 
             //threshold again to obtain binary image from blur output
-            cv::threshold(thresholdFrame,thresholdFrame,SENS_VAL,255,THRESH_BINARY);
+            cv::threshold(thresholdFrame,thresholdFrame,*thresh_val,255,THRESH_BINARY);
 
             // Return rectangular structuring element with size 5x5
             cv::Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
@@ -140,6 +143,8 @@ void detect(QString videoPath)
 
 
                 // Found object with the number of contours > 0
+                *obj_number = contours.size();
+
                 if(contours.size() > 0)
                 {
                     objectDetected=true;
@@ -147,6 +152,7 @@ void detect(QString videoPath)
                 else
                 {
                     objectDetected = false;
+                    putText(rawFrame, "No Object Detected", Point(0, 0),1,1,Scalar(255,0,0),2);
                 }
 
                 vector<Rect> objectBoundRect(contours.size());
