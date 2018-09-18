@@ -3,6 +3,12 @@
 
 #include <QWidget>
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/videoio.hpp>
+
 namespace Ui {
 class Widget;
 }
@@ -15,7 +21,7 @@ public:
     explicit Widget(QWidget *parent = 0);
     ~Widget();
 
-    void detector(QString videoPath);
+    cv::Mat detector(QString videoPath);
 
 private slots:
     void on_browseVideoPushButton_pressed();

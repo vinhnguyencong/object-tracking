@@ -7,12 +7,26 @@
 #include <QDebug>
 #include <detector.h>
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/videoio.hpp>
+
+using namespace std;
+using namespace cv;
+
 // Threshold value
 static int SENS_VAL = 20;
 static int OBJ_NUM = 0;
+
 int *obj_number = &OBJ_NUM;
 int *threshold_value = &SENS_VAL;
 
+static Mat rawimg;
+
+//QImage imdisplay;
+QImage imdisplay((uchar*)rawimg.data, rawimg.cols, rawimg.rows, rawimg.step, QImage::Format_RGB888);
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
@@ -21,6 +35,11 @@ Widget::Widget(QWidget *parent) :
     ui->setupUi(this);
     ui->thresholdHorizontalSlider->setRange(0,255);
     ui->thresholdHorizontalSlider->setSliderPosition(20);
+
+    //ui->label_2->setPixmap(QPixmap::fromImage(QImage(rawimg.data(), rawimg.col)));
+    ui->videoWidget->setp
+
+    ui->label_2->setPixmap(QPixmap::fromImage(imdisplay));
 }
 
 Widget::~Widget()
@@ -101,18 +120,17 @@ void Widget::on_playVideoPushButton_pressed()
 {
     // Get path to Video
     QString videoPath = ui->videoURLLineEdit->text();
-    detector(videoPath);
 
     // Throw a message box when video path is blank
-//    if(videoPath == "")
-//    {
-//        QMessageBox::about(this, "Warning", "Please choose a video");
-//    }
-//    else
-//    {
-//        detector(videoPath);
-
-//    }
+    if(videoPath == "")
+    {
+        QMessageBox::about(this, "Warning", "Please choose a video");
+    }
+    else
+    {
+        cv::Mat img = detector(videoPath);
+        rawimg = img;
+    }
 }
 
 //void Widget::closeEvent(QCloseEvent *event)
@@ -136,7 +154,8 @@ void Widget::on_thresholdHorizontalSlider_valueChanged(int value)
     *threshold_value = value;
 }
 
-void Widget::detector(QString videoPath)
+cv::Mat Widget::detector(QString videoPath)
 {
-    detect(videoPath);
+    cv::Mat img = detect(videoPath);
+    return img;
 }
