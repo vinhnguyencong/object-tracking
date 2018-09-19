@@ -12,6 +12,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/videoio.hpp>
+#include <QtCore>
 
 using namespace std;
 using namespace cv;
@@ -33,13 +34,21 @@ Widget::Widget(QWidget *parent) :
     ui(new Ui::Widget)
 {
     ui->setupUi(this);
+    this->setWindowState(Qt::WindowMaximized);
+
     ui->thresholdHorizontalSlider->setRange(0,255);
     ui->thresholdHorizontalSlider->setSliderPosition(20);
 
-    //ui->label_2->setPixmap(QPixmap::fromImage(QImage(rawimg.data(), rawimg.col)));
-    ui->videoWidget->setp
+    tmrTimer = new QTimer(this);
 
-    ui->label_2->setPixmap(QPixmap::fromImage(imdisplay));
+
+//    VideoCapture video;
+//    video.open("/home/vinhnc/Downloads/sukhoi.mp4");
+//    Mat frame;
+//    video.read(frame);
+    video.open("/home/vinhnc/Downloads/sukhoi.mp4");
+    connect(tmrTimer, SIGNAL(timeout()), this, SLOT(processFrameAndUpdateGUI()));
+    tmrTimer->start(5);
 }
 
 Widget::~Widget()
@@ -158,4 +167,13 @@ cv::Mat Widget::detector(QString videoPath)
 {
     cv::Mat img = detect(videoPath);
     return img;
+}
+
+void Widget::processFrameAndUpdateGUI()
+{
+
+    video.read(frame);
+    cvtColor(frame, frame, CV_BGR2RGB);
+    QImage imgdp((uchar*)frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
+    ui->imgViewer->setPixmap(QPixmap::fromImage(imgdp));
 }

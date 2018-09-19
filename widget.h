@@ -9,6 +9,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 
+using namespace cv;
+
 namespace Ui {
 class Widget;
 }
@@ -40,8 +42,17 @@ private slots:
 
     void on_thresholdHorizontalSlider_valueChanged(int value);
 
+
+public slots:
+    void processFrameAndUpdateGUI();
+
 private:
     Ui::Widget *ui;
+
+    VideoCapture video;
+    Mat frame;
+    QImage imgdp;
+    QTimer *tmrTimer;
 
 //protected:
 //    void closeEvent(QCloseEvent *event);
