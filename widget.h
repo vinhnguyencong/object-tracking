@@ -50,7 +50,8 @@ private:
     Ui::Widget *ui;
 
     VideoCapture video;
-    Mat frame;
+    Mat frame, grayFrame, testFrame, thresholdFrame, temp;
+    Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
     QImage imgdp;
     QTimer *tmrTimer;
 

@@ -34,7 +34,7 @@ Widget::Widget(QWidget *parent) :
     ui(new Ui::Widget)
 {
     ui->setupUi(this);
-    this->setWindowState(Qt::WindowMaximized);
+//    this->setWindowState(Qt::WindowMaximized);
 
     ui->thresholdHorizontalSlider->setRange(0,255);
     ui->thresholdHorizontalSlider->setSliderPosition(20);
@@ -46,9 +46,9 @@ Widget::Widget(QWidget *parent) :
 //    video.open("/home/vinhnc/Downloads/sukhoi.mp4");
 //    Mat frame;
 //    video.read(frame);
-    video.open("/home/vinhnc/Downloads/sukhoi.mp4");
-    connect(tmrTimer, SIGNAL(timeout()), this, SLOT(processFrameAndUpdateGUI()));
-    tmrTimer->start(5);
+//    video.open("/home/vinhnc/Videos/sukhoi.mp4");
+//    connect(tmrTimer, SIGNAL(timeout()), this, SLOT(processFrameAndUpdateGUI()));
+//    tmrTimer->start(30);
 }
 
 Widget::~Widget()
@@ -137,8 +137,9 @@ void Widget::on_playVideoPushButton_pressed()
     }
     else
     {
-        cv::Mat img = detector(videoPath);
-        rawimg = img;
+        video.open("/home/vinhnc/Videos/sukhoi.mp4");
+        connect(tmrTimer, SIGNAL(timeout()), this, SLOT(processFrameAndUpdateGUI()));
+        tmrTimer->start(30);
     }
 }
 
@@ -173,7 +174,51 @@ void Widget::processFrameAndUpdateGUI()
 {
 
     video.read(frame);
-    cvtColor(frame, frame, CV_BGR2RGB);
-    QImage imgdp((uchar*)frame.data, frame.cols, frame.rows, frame.step, QImage::Format_RGB888);
+    frame.copyTo(testFrame);
+    cv::cvtColor(testFrame,grayFrame,COLOR_BGR2GRAY);
+    Canny(grayFrame, grayFrame, 10, 150, 3);
+    cv::threshold(grayFrame,thresholdFrame,*threshold_value,255,THRESH_BINARY);
+
+    cv::dilate(thresholdFrame, thresholdFrame, structuringElement5x5);
+    cv::dilate(thresholdFrame, thresholdFrame, structuringElement5x5);
+    cv::erode(thresholdFrame, thresholdFrame, structuringElement5x5);
+
+    thresholdFrame.copyTo(temp);
+    //these two vectors needed for output of findContours
+    vector< vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+
+    // Find boundary of onject
+    findContours(temp,contours,hierarchy,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_SIMPLE );
+
+    bool objectDetected;
+
+    if(contours.size() > 0)
+    {
+        objectDetected=true;
+    }
+    else
+    {
+        objectDetected = false;
+        putText(testFrame, "No Object Detected", Point(0, 0),1,1,Scalar(255,0,0),2);
+    }
+
+    vector<Rect> objectBoundRect(contours.size());
+    vector<vector<Point> > hull( contours.size() );
+
+    if(objectDetected)
+    {
+        for (size_t i = 0; i < contours.size(); i++)
+        {
+            // Find convex hull of contours
+            convexHull( Mat(contours[i]), hull[i], false );
+            objectBoundRect[i] = boundingRect(Mat(hull[i]));
+            rectangle( testFrame, objectBoundRect[i].tl(), objectBoundRect[i].br(), CV_RGB(0,0,255), 2, 8, 0 );
+        }
+
+    }
+
+    cv::cvtColor(testFrame, testFrame, CV_BGR2RGB);
+    QImage imgdp((uchar*)testFrame.data, testFrame.cols, testFrame.rows, testFrame.step, QImage::Format_RGB888);
     ui->imgViewer->setPixmap(QPixmap::fromImage(imgdp));
 }
