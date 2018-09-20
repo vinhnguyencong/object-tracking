@@ -24,11 +24,6 @@ static int OBJ_NUM = 0;
 int *obj_number = &OBJ_NUM;
 int *threshold_value = &SENS_VAL;
 
-static Mat rawimg;
-
-//QImage imdisplay;
-QImage imdisplay((uchar*)rawimg.data, rawimg.cols, rawimg.rows, rawimg.step, QImage::Format_RGB888);
-
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget)
@@ -137,7 +132,8 @@ void Widget::on_playVideoPushButton_pressed()
     }
     else
     {
-        video.open("/home/vinhnc/Videos/sukhoi.mp4");
+        string stdstrVideoPath = videoPath.toUtf8().constData();
+        video.open(stdstrVideoPath);
         connect(tmrTimer, SIGNAL(timeout()), this, SLOT(processFrameAndUpdateGUI()));
         tmrTimer->start(30);
     }
@@ -173,11 +169,11 @@ cv::Mat Widget::detector(QString videoPath)
 void Widget::processFrameAndUpdateGUI()
 {
 
-    video.read(frame);
-    frame.copyTo(testFrame);
-    cv::cvtColor(testFrame,grayFrame,COLOR_BGR2GRAY);
+    video.read(rawFrame);
+    rawFrame.copyTo(frame);
+    cv::cvtColor(frame,grayFrame,COLOR_BGR2GRAY);
     Canny(grayFrame, grayFrame, 10, 150, 3);
-    cv::threshold(grayFrame,thresholdFrame,*threshold_value,255,THRESH_BINARY);
+    cv::threshold(grayFrame,thresholdFrame,SENS_VAL,255,THRESH_BINARY);
 
     cv::dilate(thresholdFrame, thresholdFrame, structuringElement5x5);
     cv::dilate(thresholdFrame, thresholdFrame, structuringElement5x5);
@@ -191,6 +187,9 @@ void Widget::processFrameAndUpdateGUI()
     // Find boundary of onject
     findContours(temp,contours,hierarchy,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_SIMPLE );
 
+    // Number of object detected
+    *obj_number = contours.size();
+
     bool objectDetected;
 
     if(contours.size() > 0)
@@ -200,7 +199,7 @@ void Widget::processFrameAndUpdateGUI()
     else
     {
         objectDetected = false;
-        putText(testFrame, "No Object Detected", Point(0, 0),1,1,Scalar(255,0,0),2);
+        putText(rawFrame, "No Object Detected", Point(0, 0),1,1,Scalar(255,0,0),2);
     }
 
     vector<Rect> objectBoundRect(contours.size());
@@ -213,12 +212,12 @@ void Widget::processFrameAndUpdateGUI()
             // Find convex hull of contours
             convexHull( Mat(contours[i]), hull[i], false );
             objectBoundRect[i] = boundingRect(Mat(hull[i]));
-            rectangle( testFrame, objectBoundRect[i].tl(), objectBoundRect[i].br(), CV_RGB(0,0,255), 2, 8, 0 );
+            rectangle(rawFrame, objectBoundRect[i].tl(), objectBoundRect[i].br(), CV_RGB(0,0,255), 2, 8, 0 );
         }
 
     }
 
-    cv::cvtColor(testFrame, testFrame, CV_BGR2RGB);
-    QImage imgdp((uchar*)testFrame.data, testFrame.cols, testFrame.rows, testFrame.step, QImage::Format_RGB888);
+    cv::cvtColor(rawFrame, rawFrame, CV_BGR2RGB);
+    QImage imgdp((uchar*)rawFrame.data, rawFrame.cols, rawFrame.rows, rawFrame.step, QImage::Format_RGB888);
     ui->imgViewer->setPixmap(QPixmap::fromImage(imgdp));
 }
