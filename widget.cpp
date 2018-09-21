@@ -21,6 +21,43 @@ static int threshold_value = 20;
 static int numberofObject = 0;
 static int objectNumber = 0;
 
+
+//
+// Kalman Filter
+int stateSize = 6;
+int measSize = 4;
+int contrSize = 0;
+
+//bounding rectangle of the object, we will use the center of this as its position.
+Rect objectBoundingRectangle = Rect(0,0,0,0);
+
+//we'll have just one object to search for
+//and keep track of its position.
+float theObject[2] = {0,0};
+
+unsigned int type = CV_32F;
+cv::KalmanFilter kf(stateSize, measSize, contrSize, type);
+
+Mat state(stateSize, 1, type);  // [x,y,v_x,v_y,w,h]
+Mat meas(measSize, 1, type);    // [z_x,z_y,z_w,z_h]l
+
+//Mat procNoise(stateSize, 1, type);
+// [E_x,E_y,E_v_x,E_v_y,E_w,E_h]
+
+// Transition State Matrix A
+// Note: set dT at each processing step!
+// [ 1 0 dT 0  0 0 ]
+// [ 0 1 0  dT 0 0 ]
+// [ 0 0 1  0  0 0 ]
+// [ 0 0 0  1  0 0 ]
+// [ 0 0 0  0  1 0 ]
+// [ 0 0 0  0  0 1 ]
+
+
+
+//
+
+
 // Convert int to string
 std::string intToString(int number)
 {
@@ -140,7 +177,7 @@ void Widget::on_playVideoPushButton_pressed()
         string stdstrVideoPath = videoPath.toUtf8().constData();
         video.open(stdstrVideoPath);
         connect(tmrTimer, SIGNAL(timeout()), this, SLOT(processFrameAndUpdateGUI()));
-        tmrTimer->start(25);
+        tmrTimer->start(55);
     }
 }
 
@@ -167,37 +204,7 @@ void Widget::on_thresholdHorizontalSlider_valueChanged(int value)
 
 void Widget::processFrameAndUpdateGUI()
 {
-    // Kalman Filter
-    int stateSize = 6;
-    int measSize = 4;
-    int contrSize = 0;
-
-    //bounding rectangle of the object, we will use the center of this as its position.
-    Rect objectBoundingRectangle = Rect(0,0,0,0);
-
-    //we'll have just one object to search for
-    //and keep track of its position.
-    float theObject[2] = {0,0};
-
-    unsigned int type = CV_32F;
-    KalmanFilter kf(stateSize, measSize, contrSize, type);
-
-    Mat state(stateSize, 1, type);  // [x,y,v_x,v_y,w,h]
-    Mat meas(measSize, 1, type);    // [z_x,z_y,z_w,z_h]
-
-    //Mat procNoise(stateSize, 1, type);
-    // [E_x,E_y,E_v_x,E_v_y,E_w,E_h]
-
-    // Transition State Matrix A
-    // Note: set dT at each processing step!
-    // [ 1 0 dT 0  0 0 ]
-    // [ 0 1 0  dT 0 0 ]
-    // [ 0 0 1  0  0 0 ]
-    // [ 0 0 0  1  0 0 ]
-    // [ 0 0 0  0  1 0 ]
-    // [ 0 0 0  0  0 1 ]
     cv::setIdentity(kf.transitionMatrix);
-
     // Measure Matrix H
     // [ 1 0 0 0 0 0 ]
     // [ 0 1 0 0 0 0 ]
