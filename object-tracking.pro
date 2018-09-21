@@ -18,12 +18,10 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        widget.cpp \
-    detector.cpp \
-    tracker.cpp
+        widget.cpp
 
-HEADERS  += widget.h \
-    detector.h \
-    tracker.h
+HEADERS  += widget.h
 
 FORMS    += widget.ui
+
+CONFIG += c++11

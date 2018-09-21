@@ -23,8 +23,6 @@ public:
     explicit Widget(QWidget *parent = 0);
     ~Widget();
 
-    cv::Mat detector(QString videoPath);
-
 private slots:
     void on_browseVideoPushButton_pressed();
 
@@ -50,7 +48,7 @@ private:
     Ui::Widget *ui;
 
     VideoCapture video;
-    Mat frame, grayFrame, rawFrame, thresholdFrame, temp;
+    Mat frame, grayFrame, thresholdFrame, temp, rawFrame;
     Mat structuringElement5x5 = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
     QImage imgdp;
     QTimer *tmrTimer;
