@@ -21,14 +21,13 @@ static int threshold_value = 20;
 static int numberofObject = 0;
 static int objectNumber = 0;
 
-
 //
 // Kalman Filter
 int stateSize = 6;
 int measSize = 4;
 int contrSize = 0;
 
-//bounding rectangle of the object, we will use the center of this as its position.
+////bounding rectangle of the object, we will use the center of this as its position.
 Rect objectBoundingRectangle = Rect(0,0,0,0);
 
 //we'll have just one object to search for
@@ -176,6 +175,7 @@ void Widget::on_playVideoPushButton_pressed()
     {
         string stdstrVideoPath = videoPath.toUtf8().constData();
         video.open(stdstrVideoPath);
+        //video.open(0);
         connect(tmrTimer, SIGNAL(timeout()), this, SLOT(processFrameAndUpdateGUI()));
         tmrTimer->start(55);
     }
@@ -223,7 +223,8 @@ void Widget::processFrameAndUpdateGUI()
     // [ 0    0   0     Ev_y  0    0  ]
     // [ 0    0   0     0     Ew   0  ]
     // [ 0    0   0     0     0    Eh ]
-    //cv::setIdentity(kf.processNoiseCov, cv::Scalar(1e-2));
+
+    cv::setIdentity(kf.processNoiseCov, cv::Scalar(1e-2));
     kf.processNoiseCov.at<float>(0) = 1e-2;
     kf.processNoiseCov.at<float>(7) = 1e-2;
     kf.processNoiseCov.at<float>(14) = 5.0f;
@@ -254,19 +255,20 @@ void Widget::processFrameAndUpdateGUI()
     cv::threshold(grayFrame,thresholdFrame,threshold_value,255,THRESH_BINARY);
 
     cv::dilate(thresholdFrame, thresholdFrame, structuringElement5x5);
-    //cv::dilate(thresholdFrame, thresholdFrame, structuringElement5x5);
-    //cv::erode(thresholdFrame, thresholdFrame, structuringElement5x5);
+    cv::dilate(thresholdFrame, thresholdFrame, structuringElement5x5);
+    cv::erode(thresholdFrame, thresholdFrame, structuringElement5x5);
 
     thresholdFrame.copyTo(temp);
+
     //these two vectors needed for output of findContours
     vector< vector<Point> > contours;
     vector<Vec4i> hierarchy;
 
     // Find boundary of onject
-    findContours(temp,contours,hierarchy,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_SIMPLE );
+    findContours(temp,contours,hierarchy,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_SIMPLE);
 
     // Number of object detected
-    numberofObject = contours.size();
+    numberofObject = hierarchy.size();
 
     bool objectDetected;
 
@@ -281,30 +283,38 @@ void Widget::processFrameAndUpdateGUI()
     }
 
     vector<Rect> objectBoundRect(contours.size());
-    vector<vector<Point> > hull( contours.size() );
+    vector<vector<Point> > hull(contours.size());
+
+    //bounding rectangle of the object, we will use the center of this as its position.
+   // Rect objectBoundingRectangle = Rect(0,0,0,0);
 
     if(objectDetected)
     {
-        //kf.correct(meas);
+        kf.correct(meas);
 
-//        for (size_t i = 0; i < contours.size(); i++)
-//        {
-//            // Find convex hull of contours
-//            convexHull( Mat(contours[i]), hull[i], false );
+        for (size_t i = 0; i < contours.size(); i++)
+        {
+            // Find convex hull of contours
+            convexHull( Mat(contours[i]), hull[i], false );
 //            objectBoundRect[i] = boundingRect(Mat(hull[i]));
 
-//            if(objectNumber == 0)
-//            {
-//                rectangle(rawFrame, objectBoundRect[i].tl(), objectBoundRect[i].br(), CV_RGB(0,0,255), 2, 8, 0 );
-//                putText(rawFrame, " Object " + intToString(i+1) , Point(objectBoundRect[i].br().x, objectBoundRect[i].br().y),1,1,Scalar(255,0,0),2);
-//            }
-//        }
+            if(objectNumber == 0)
+            {
+                objectBoundRect[i] = boundingRect(Mat(hull[i]));
+                rectangle(rawFrame, objectBoundRect[i].tl(), objectBoundRect[i].br(), CV_RGB(0,0,255), 2, 8, 0 );
+                putText(rawFrame, " Object " + intToString(i+1) , Point(objectBoundRect[i].br().x, objectBoundRect[i].br().y),1,1,Scalar(255,0,0),2);
+            }
+            else
+            {
+                objectBoundingRectangle = boundingRect(Mat(hull[objectNumber-1]));
+            }
+        }
 
-        vector< vector<Point> > largestContourVec;
-        largestContourVec.push_back(contours.at(contours.size()-1));
-        //make a bounding rectangle around the largest contour then find its centroid
-        //this will be the object's final estimated position.
-        objectBoundingRectangle = boundingRect(largestContourVec.at(0));
+//        vector< vector<Point> > largestContourVec;
+//        largestContourVec.push_back(contours.at(contours.size()-1));
+//        //make a bounding rectangle around the largest contour then find its centroid
+//        //this will be the object's final estimated position.
+//        objectBoundingRectangle = boundingRect(largestContourVec.at(0));
         int xpos = objectBoundingRectangle.x + objectBoundingRectangle.width/2;
         int ypos = objectBoundingRectangle.y + objectBoundingRectangle.height/2;
 
@@ -313,6 +323,7 @@ void Widget::processFrameAndUpdateGUI()
 
         kf.transitionMatrix.at<float>(2) = dT;
         kf.transitionMatrix.at<float>(9) = dT;
+        kf.statePre.copyTo(kf.statePost);
 
         state = kf.predict();
         cv::Rect predRect;
