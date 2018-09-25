@@ -291,12 +291,17 @@ void Widget::processFrameAndUpdateGUI()
     if(objectDetected)
     {
         kf.correct(meas);
+        vector<double> areaX;
+        double areaT;
+        vector<double> areaS;
+        double minArea = 0;
 
         for (size_t i = 0; i < contours.size(); i++)
         {
             // Find convex hull of contours
             convexHull( Mat(contours[i]), hull[i], false );
 //            objectBoundRect[i] = boundingRect(Mat(hull[i]));
+            areaX[i] = contourArea(contours[i]);
 
             if(objectNumber == 0)
             {
@@ -307,7 +312,12 @@ void Widget::processFrameAndUpdateGUI()
             else
             {
                 objectBoundingRectangle = boundingRect(Mat(hull[objectNumber-1]));
+                areaT = contourArea(contours[objectNumber-1]);
             }
+            areaS[i] = abs(areaX[i]-areaT);
+            if(areaS[i]<minArea)
+                minArea = areaS[i];
+                objectNumber = i+1;
         }
 
 //        vector< vector<Point> > largestContourVec;
