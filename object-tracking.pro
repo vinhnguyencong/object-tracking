@@ -6,6 +6,8 @@
 
 QT       += core gui
 
+QMAKE_LFLAGS += -static-libgcc
+
 INCLUDEPATH += -I/usr/local/include
 
 LIBS += -L/usr/local/lib -lopencv_imgproc -lopencv_imgcodecs -lopencv_video -lopencv_videoio -lopencv_core \
@@ -25,3 +27,5 @@ HEADERS  += widget.h
 FORMS    += widget.ui
 
 CONFIG += c++11
+
+CONFIG += release

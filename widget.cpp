@@ -304,7 +304,7 @@ void Widget::processFrameAndUpdateGUI()
                 rectangle(rawFrame, objectBoundRect[i].tl(), objectBoundRect[i].br(), CV_RGB(0,0,255), 2, 8, 0 );
                 putText(rawFrame, " Object " + intToString(i+1) , Point(objectBoundRect[i].br().x, objectBoundRect[i].br().y),1,1,Scalar(255,0,0),2);
             }
-            else
+            else if(objectNumber == i)
             {
                 objectBoundingRectangle = boundingRect(Mat(hull[objectNumber-1]));
             }
